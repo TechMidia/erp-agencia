@@ -2,23 +2,33 @@ version: '3.8'
 
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
     ports:
       - "5000:5000"
     environment:
-      # Variáveis de ambiente para o EasyPanel
-      # O EasyPanel injeta as variáveis de conexão do banco de dados automaticamente
-      # Você pode definir outras variáveis aqui, como SECRET_KEY
-      SECRET_KEY: ${SECRET_KEY:-sua_chave_secreta_padrao_aqui}
-      FLASK_ENV: production
-      DATABASE_URL: ${DATABASE_URL}
+      # Variáveis de ambiente para o Flask
+      - FLASK_ENV=production
+      - SECRET_KEY=sua_chave_secreta_aqui_substitua_isso
+      # Variáveis de ambiente para a conexão com o banco de dados
+      - DATABASE_URL=postgresql://user:password@db:5432/mydatabase
+    depends_on:
+      - db
     volumes:
-      # Persistir uploads de arquivos
       - app_uploads:/app/src/static/uploads
+    restart: unless-stopped
+
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: mydatabase
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
 
 volumes:
   app_uploads:
-    driver: local
+  postgres_data:
+
+
